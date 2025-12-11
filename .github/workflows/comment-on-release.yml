@@ -52,12 +52,17 @@ jobs:
               : '${{ github.event.release.tag_name }}';
             const previousTag = '${{ steps.previous_tag.outputs.previous_tag }}';
             
+            // Use upstream repo for PR lookups (change these if needed)
+            const upstreamOwner = 'modelcontextprotocol';
+            const upstreamRepo = 'python-sdk';
+            
             console.log(`Finding PRs between ${previousTag} and ${currentTag}`);
+            console.log(`Checking upstream: ${upstreamOwner}/${upstreamRepo}`);
             
             // Get commits between previous and current release
             const comparison = await github.rest.repos.compareCommits({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
+              owner: upstreamOwner,
+              repo: upstreamRepo,
               base: previousTag,
               head: currentTag
             });
@@ -93,8 +98,8 @@ jobs:
             for (const prNumber of prNumbers) {
               try {
                 const { data: pr } = await github.rest.pulls.get({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
+                  owner: upstreamOwner,
+                  repo: upstreamRepo,
                   pull_number: prNumber
                 });
                 
@@ -125,11 +130,15 @@ jobs:
             
             const comment = `🎉 This pull request is included in [${releaseTag}](${releaseUrl})!`;
             
+            // Use upstream repo for commenting
+            const upstreamOwner = 'modelcontextprotocol';
+            const upstreamRepo = 'python-sdk';
+            
             for (const prNumber of prNumbers) {
               try {
                 await github.rest.issues.createComment({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
+                  owner: upstreamOwner,
+                  repo: upstreamRepo,
                   issue_number: prNumber,
                   body: comment
                 });
